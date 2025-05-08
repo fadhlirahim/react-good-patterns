@@ -773,11 +773,17 @@ function ThemedButton() {
 
 # Summary Table
 
-| Concern | Bad AI Pattern | Good Practice |
-|---------|---------------|--------------|
-| State | useState for everything | Zustand, Redux, custom hooks |
-| Data Fetching | useEffect + fetch | React Query, SWR |
-| Side Effects | No cleanup, no abort | AbortController, or query libs |
-| Logic Reuse | Duplicated logic in components | Custom hooks |
-
-
+| Concern | Bad AI Pattern | Solid Engineering Practice |
+|---------|---------------|----------------------------|
+| **State Management** | `useState` everywhere, prop‑drilling | Central store (Zustand / Redux Toolkit) or colocated custom hooks |
+| **Data Fetching** | `useEffect` + `fetch`, manual loading/error juggling | React Query / SWR with caching, retries, stale‑while‑revalidate |
+| **Side Effects** | Effects without cleanup → race conditions, leaks | AbortController or query library handles cancellation & retries |
+| **Logic Reuse** | Copy‑pasted hooks and state in every component | Extract cross‑cutting logic into custom hooks |
+| **Workflow / State Machine** | Boolean‑flag soup, impossible states | Deterministic statechart in a single store (Zustand / XState) |
+| **Concurrent UI Updates** | Blocking synchronous work inside effects | `useTransition` / `startTransition` for low‑priority updates |
+| **Routing & Navigation** | DIY history manipulation, inline route state | React Router v6 (or Next.js built‑ins) with lazy‑loaded routes |
+| **Error Handling** | No error boundary → full‑app crashes | Top‑level `ErrorBoundary` plus logging in `componentDidCatch` |
+| **Form Management** | Manual state, zero validation or feedback | React Hook Form + Yup/Zod schema for declarative validation |
+| **Code Splitting & Lazy Loading** | Eager imports ballooning bundle size | `React.lazy` + `Suspense` for on‑demand loading |
+| **Testing Strategy** | Brittle tests keyed to DOM structure | User‑centric tests with React Testing Library & jest‑dom |
+| **Accessibility & Theming** | Non‑semantic elements, missing ARIA, inline colors | Semantic HTML, ARIA labels, CSS variables / theme provider |
