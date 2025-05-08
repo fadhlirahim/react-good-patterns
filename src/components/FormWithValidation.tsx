@@ -32,7 +32,8 @@ const FormWithValidation: React.FC = () => {
       name: '',
       email: '',
       message: ''
-    }
+    },
+    mode: 'onChange'
   });
 
   const onSubmit = async (data: ContactFormData) => {
