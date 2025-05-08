@@ -1,5 +1,6 @@
 import React from 'react';
 import { signal, computed } from '@preact/signals-react';
+import { useSignals } from '@preact/signals-react/runtime';
 
 /**
  * Signal for the counter value
@@ -10,6 +11,9 @@ const countSignal = signal<number>(0);
  * SignalCounter component that demonstrates using @preact/signals-react for state management
  */
 const SignalCounter: React.FC = () => {
+  // Use the useSignals hook to make the component reactive to signal changes
+  useSignals();
+
   // Computed signal that derives its value from countSignal
   const double = computed(() => countSignal.value * 2);
 

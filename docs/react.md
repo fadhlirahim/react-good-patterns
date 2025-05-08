@@ -130,7 +130,7 @@ function UserList() {
 
 ✅ Good (React Query)
 
-```typescript```
+```typescript
 import { useQuery } from '@tanstack/react-query';
 
 function UserList() {
