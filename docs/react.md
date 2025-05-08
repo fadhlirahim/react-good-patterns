@@ -441,6 +441,335 @@ function OrderProcess() {
 
 This approach gives most of the benefits of formal state machines while maintaining the simplicity and familiarity of React state management. It's a pragmatic middle ground that's often easier to adopt in existing projects.
 
+## 6. Concurrent UI Techniques
+
+❌ Bad (Blocking UI updates without concurrency):
+```jsx
+// Bad example: Synchronously fetching data in useEffect can cause UI jank.
+function SearchResults({ query }) {
+  const [results, setResults] = React.useState([]);
+
+  React.useEffect(() => {
+    fetch(`/api/search?q=${query}`)
+      .then(res => res.json())
+      .then(data => setResults(data));
+  }, [query]);
+
+  return (
+    <div>
+      {results.map(item => <p key={item.id}>{item.title}</p>)}
+    </div>
+  );
+}
+```
+
+✅ Good (Using useTransition for non-blocking updates):
+```jsx
+// Good example: Leveraging useTransition to mark state updates as low-priority.
+function SearchResults({ query }) {
+  const [results, setResults] = React.useState([]);
+  const [isPending, startTransition] = React.useTransition();
+
+  React.useEffect(() => {
+    startTransition(() => {
+      fetch(`/api/search?q=${query}`)
+        .then(res => res.json())
+        .then(data => setResults(data));
+    });
+  }, [query, startTransition]);
+
+  return (
+    <div>
+      {isPending && <div>Loading...</div>}
+      {results.map(item => <p key={item.id}>{item.title}</p>)}
+    </div>
+  );
+}
+```
+
+## 7. Routing and Navigation (Not applicable with Next.js apps)
+
+❌ Bad (Manual routing without a dedicated library):
+```jsx
+// Bad example: Handling routing manually using state and window history.
+function App() {
+  const [route, setRoute] = React.useState(window.location.pathname);
+
+  React.useEffect(() => {
+    const onPopState = () => setRoute(window.location.pathname);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  return (
+    <div>
+      {route === '/' && <Home />}
+      {route === '/about' && <About />}
+      <button onClick={() => {
+        window.history.pushState({}, '', '/about');
+        setRoute('/about');
+      }}>
+        About
+      </button>
+    </div>
+  );
+}
+```
+
+✅ Good (Using React Router v6 with lazy-loaded routes):
+```jsx
+// Good example: Utilizing React Router to manage routes and lazy load components.
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+
+const Home = lazy(() => import('./Home'));
+const About = lazy(() => import('./About'));
+
+function App() {
+  return (
+    <BrowserRouter>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+      </nav>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
+  );
+}
+```
+
+## 8. Error Handling
+
+❌ Bad (No error boundary; crashes on errors):
+```jsx
+// Bad example: A component that throws errors without an error boundary.
+function MyComponent({ data }) {
+  if (!data) {
+    throw new Error("Data not found");
+  }
+  return <div>{data}</div>;
+}
+
+function App() {
+  return <MyComponent data={null} />;
+}
+```
+
+✅ Good (Wrapping components with an Error Boundary):
+```jsx
+// Good example: Using an ErrorBoundary component to catch and handle errors gracefully.
+import React from 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Error caught in boundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+    return this.props.children;
+  }
+}
+
+function MyComponent({ data }) {
+  if (!data) {
+    throw new Error("Data not found");
+  }
+  return <div>{data}</div>;
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <MyComponent data={null} />
+    </ErrorBoundary>
+  );
+}
+```
+
+## 9. Form Management
+
+❌ Bad (Manual state handling with no validation):
+```jsx
+// Bad example: Uncontrolled form without validation; error handling is omitted.
+function ContactForm() {
+  const [formData, setFormData] = React.useState({ name: '', email: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        placeholder="Name"
+      />
+      <input
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        placeholder="Email"
+      />
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+✅ Good (Using React Hook Form with Yup for schema validation):
+```jsx
+// Good example: Using React Hook Form integrated with Yup for declarative validation.
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+
+const schema = Yup.object().shape({
+  name: Yup.string().required('Name is required'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
+});
+
+function ContactForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = data => {
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div>
+        <input {...register("name")} placeholder="Name" />
+        {errors.name && <p>{errors.name.message}</p>}
+      </div>
+      <div>
+        <input {...register("email")} placeholder="Email" />
+        {errors.email && <p>{errors.email.message}</p>}
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+```
+
+## 10. Code Splitting and Lazy Loading
+
+❌ Bad (Eagerly importing heavy components, increasing the initial bundle size):
+```jsx
+// Bad example: Directly importing a large component causing a heavier bundle.
+import HeavyComponent from './HeavyComponent';
+
+function App() {
+  return (
+    <div>
+      <HeavyComponent />
+    </div>
+  );
+}
+```
+
+✅ Good (Lazy loading heavy components with React.lazy and Suspense):
+```jsx
+// Good example: Dynamically importing components to reduce initial load time.
+import React, { lazy, Suspense } from 'react';
+
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading Component...</div>}>
+      <HeavyComponent />
+    </Suspense>
+  );
+}
+```
+
+## 11. Testing Strategies
+
+❌ Bad (Testing implementation details, resulting in brittle tests):
+```jsx
+// Bad example: Relying on internal DOM structure which may change.
+import { render } from '@testing-library/react';
+import MyComponent from './MyComponent';
+
+test('MyComponent renders data', () => {
+  const { container } = render(<MyComponent />);
+  expect(container.querySelector('.data')).toBeDefined();
+});
+```
+
+✅ Good (Focusing on user-centric behaviors using React Testing Library):
+```jsx
+// Good example: Testing component behavior by simulating user interactions.
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import MyComponent from './MyComponent';
+
+test('MyComponent displays loaded data after user action', async () => {
+  render(<MyComponent />);
+
+  // Check for an initial loading state
+  expect(screen.getByText(/Loading/i)).toBeInTheDocument();
+
+  // Simulate user action that triggers data loading
+  const button = screen.getByRole('button', { name: /load data/i });
+  userEvent.click(button);
+
+  // Wait and assert that data is displayed
+  expect(await screen.findByText(/Data loaded/i)).toBeInTheDocument();
+});
+```
+
+## 12. Accessibility & Theming
+
+❌ Bad (Non-semantic elements and missing ARIA labels):
+```jsx
+// Bad example: Using a div as a clickable element without semantics or accessibility.
+function ThemedButton() {
+  return <div onClick={() => console.log('Clicked!')}>Click me</div>;
+}
+```
+
+✅ Good (Semantic button with ARIA attributes and theming via CSS variables):
+```jsx
+// Good example: Accessible button component that utilizes theming.
+function ThemedButton() {
+  return (
+    <button
+      aria-label="Click me"
+      onClick={() => console.log('Clicked!')}
+      style={{ padding: '8px 16px', backgroundColor: 'var(--primary-color)', color: '#fff' }}
+    >
+      Click me
+    </button>
+  );
+}
+
+/* CSS (in a separate file or styled-components):
+:root {
+  --primary-color: #007bff;
+}
+*/
+```
 
 # Summary Table
 
