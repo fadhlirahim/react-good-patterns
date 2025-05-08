@@ -4,5 +4,11 @@ Read docs/react.md [here](docs/react.md)
 
 Tech: React + TypeScript + Vite
 
-`npm install`
-`npm run dev`
+## Getting Started
+
+```
+npm install
+npm run dev
+```
+
+Localhost: [http://localhost:5173](http://localhost:5173)
