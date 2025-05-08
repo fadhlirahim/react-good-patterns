@@ -23,17 +23,32 @@ const UserList: React.FC = () => {
   });
 
   return (
-    <div>
-      <h2>Users (React Query)</h2>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <ul>
-          {users.map((user) => (
-            <li key={user.id}>{user.name}</li>
-          ))}
-        </ul>
-      )}
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">Users (React Query)</h3>
+      </div>
+      <hr style={{ margin: 0, borderTop: '1px solid #eee' }} />
+      <div className="card-content">
+        {isLoading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} style={{ padding: '0.5rem', borderRadius: '0.375rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', height: '2.5rem' }}></div>
+            ))}
+          </div>
+        ) : (
+          <ul className="list">
+            {users.map((user) => (
+              <li
+                key={user.id}
+                className="list-item"
+              >
+                <div className="list-item-title">{user.name}</div>
+                <div className="list-item-subtitle">{user.email}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

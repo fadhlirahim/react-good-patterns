@@ -11,14 +11,31 @@ const countSignal = signal<number>(0);
  */
 const SignalCounter: React.FC = () => {
   // Computed signal that derives its value from countSignal
-  const double = computed<number>(() => countSignal.value * 2);
+  const double = computed(() => countSignal.value * 2);
 
   return (
-    <div>
-      <h2>Signal Counter (@preact/signals-react)</h2>
-      <p>Count: {countSignal.value}</p>
-      <button onClick={() => countSignal.value++}>Increment</button>
-      <p>Double: {double.value}</p>
+    <div className="card shadow">
+      <div className="card-header">
+        <h3 className="card-title">Signal Counter (@preact/signals-react)</h3>
+      </div>
+      <hr style={{ margin: 0, borderTop: '1px solid #eee' }} />
+      <div className="card-content flex flex-col gap-4">
+        <div className="flex items-center justify-between p-2 rounded bg-blue-50 border border-blue-200">
+          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Count:</span>
+          <span className="text-blue-600" style={{ fontSize: '1.5rem', fontWeight: 700 }}>{countSignal.value}</span>
+        </div>
+        <button
+          onClick={() => countSignal.value++}
+          className="button button-secondary"
+          style={{ width: '100%' }}
+        >
+          Increment
+        </button>
+        <div className="flex items-center justify-between p-2 rounded bg-blue-50 border border-blue-200">
+          <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Double:</span>
+          <span className="text-blue-600" style={{ fontSize: '1.5rem', fontWeight: 700 }}>{double.value}</span>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,23 +1,4 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
+/* Custom styles that don't conflict with Tailwind */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -33,10 +14,50 @@
   }
 }
 
-.card {
-  padding: 2em;
+/* Add some custom styles for our components */
+.user-list-item {
+  transition: all 0.2s ease-in-out;
 }
 
-.read-the-docs {
-  color: #888;
+.user-list-item:hover {
+  transform: translateY(-2px);
+}
+
+/* Custom button styles */
+button.custom-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+button.custom-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+button.custom-btn:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
 }
