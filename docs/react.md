@@ -147,6 +147,7 @@ function UserList() {
     </ul>
   );
 }
+```
 
 ## 3. Side Effects
 
