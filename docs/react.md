@@ -635,37 +635,60 @@ function ContactForm() {
 }
 ```
 
-✅ Good (Using React Hook Form with Yup for schema validation):
-```jsx
-// Good example: Using React Hook Form integrated with Yup for declarative validation.
-import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+✅ Good (Using React Hook Form with Zod for schema validation):
 
-const schema = Yup.object().shape({
-  name: Yup.string().required('Name is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
+```jsx
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+// 1. Define your schema with Zod
+const contactSchema = z.object({
+  name: z.string().nonempty('Name is required'),
+  email: z
+    .string()
+    .nonempty('Email is required')
+    .email('Invalid email'),
 });
 
-function ContactForm() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: yupResolver(schema),
+// 2. Infer the TypeScript type of your form data
+type ContactFormData = z.infer<typeof contactSchema>;
+
+export function ContactForm() {
+  // 3. Hook up RHF with the zodResolver
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
   });
 
-  const onSubmit = data => {
+  const onSubmit = (data: ContactFormData) => {
     console.log(data);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
-        <input {...register("name")} placeholder="Name" />
-        {errors.name && <p>{errors.name.message}</p>}
+        <input
+          {...register('name')}
+          placeholder="Name"
+          aria-invalid={!!errors.name}
+        />
+        {errors.name && <p role="alert">{errors.name.message}</p>}
       </div>
+
       <div>
-        <input {...register("email")} placeholder="Email" />
-        {errors.email && <p>{errors.email.message}</p>}
+        <input
+          {...register('email')}
+          placeholder="Email"
+          aria-invalid={!!errors.email}
+        />
+        {errors.email && <p role="alert">{errors.email.message}</p>}
       </div>
+
       <button type="submit">Submit</button>
     </form>
   );
